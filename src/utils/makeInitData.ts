@@ -22,7 +22,7 @@ export default function makeInitData(webUrl: string) {
   const usId = Number(localStorage.getItem('_tg_current_user'))
   const users = JSON.parse(localStorage.getItem('_tg_users') || '[]')
 
-  const userData = users.find(u => u.id === usId) || {}
+  const userData = users.find((u: any) => u.id === usId) || {}
   
   const hasNotName = !userData.first_name && !userData.last_name
   
@@ -39,7 +39,7 @@ export default function makeInitData(webUrl: string) {
   const botId = localStorage.getItem('_tg_current_bot')
   const bots = JSON.parse(localStorage.getItem('_tg_bots') || '[]')
   
-  const botData = bots.find(u => u.id === botId) || { token: '123456789:abcDefGH-JklmM0opQ5RStuvWxyz' }
+  const botData = bots.find((b: any) => b.id === botId) || { token: '123456789:abcDefGH-JklmM0opQ5RStuvWxyz' }
   const botToken = botData.token
 
   const query_id: string = "AAGTxYhxAwAAAJPFiHGWuU3c";

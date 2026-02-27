@@ -1,8 +1,10 @@
 import axios from "axios";
 
 interface PriceResult {
-  price: string | null;
-  error?: string;
+  title?: string
+  desc?: string
+  stars?: string
+  error?: string; 
 }
 
 export default async function fetchInvoice(slug: string): Promise<PriceResult> {

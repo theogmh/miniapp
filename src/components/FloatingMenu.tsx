@@ -4,6 +4,11 @@ import {Link} from 'react-router'
 
 type FloatingMenuProps = {
   onShow: () => void
+  reload: () => void
+  title?: string
+  onSettings: () => void
+  backText: string
+  onBack: () => void
 }
 
 export const FloatingMenu: React.FC<FloatingMenuProps> = ({ onShow, reload, title, onSettings, backText, onBack }) => {
@@ -18,7 +23,7 @@ export const FloatingMenu: React.FC<FloatingMenuProps> = ({ onShow, reload, titl
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [showList, setShowList] = useState(false);
   const [buttonSize, setButtonSize] = useState({ width: 0, height: 0 });
-  const [menuSize, setMenuSize] = useState({ width: 160, height: 120 });
+  const menuSize = { width: 160, height: 120 };  
 
   useEffect(() => {
     if (buttonRef.current) {

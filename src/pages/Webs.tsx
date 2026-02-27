@@ -12,9 +12,13 @@ function isUrl(str: string): boolean {
   }
 }
 
+interface WebProps {
+    url: string
+}
+
 export const Webs = () => {
 
-    const [webs, setWebs] = useState([])
+    const [webs, setWebs] = useState<WebProps[]>([])
     const {popup} = usePopup()
     const nav = useNavigate()
     
@@ -45,7 +49,7 @@ export const Webs = () => {
         })
     }
     
-    const addWeb = (url: string) => {
+    const addWeb = () => {
         popup({
             title: 'Add Web',
             message: 'Enter url of the web to add',

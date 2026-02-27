@@ -5,7 +5,12 @@ type HighlightProps = {
   children: React.ReactNode
 }
 
-const CodeBlock: React.FC<HighlightProps> = ({ children, text }) => {
+interface HighlightPropsCB extends HighlightProps {
+  children: React.ReactNode
+  text: string
+}
+
+const CodeBlock: React.FC<HighlightPropsCB> = ({ children, text }) => {
    const [copied, setCopied] = useState<boolean>(false)
    
    const copyText = (): void => {

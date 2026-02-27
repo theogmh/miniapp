@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import type { User } from '@/utils/makeInitData'
+import type { User as UserProps } from '@/utils/makeInitData'
 import storage from '@/utils/storage'
 import {Trash, SquarePen, ChevronLeft} from 'lucide-react'
 import {usePopup} from "@/hooks/usePopup"
@@ -8,6 +8,11 @@ type Bot = {
   id: string
   token: string
   [k: string]: any
+}
+
+interface User extends UserProps {
+    edit?: boolean
+    ori_id?: number | string
 }
 
 const LS_USERS = '_tg_users'
@@ -44,7 +49,7 @@ export const Settings = () => {
   useEffect(() => {
     const rawUsers = localStorage.getItem(LS_USERS)
     if (rawUsers) {
-      const parsed = parseJSON<User[], User[]>(rawUsers, [])
+      const parsed = parseJSON<User[]>(rawUsers, [])
       setUsers(parsed)
       const cur = localStorage.getItem(LS_CURRENT_USER)
       if (cur) {
@@ -59,7 +64,7 @@ export const Settings = () => {
     }
     const legacy = localStorage.getItem(LEGACY_SINGLE_USER)
     if (legacy) {
-      const single = parseJSON<User, User>(legacy, {} as User)
+      const single = parseJSON<User>(legacy, {} as User)
       const arr = single && Object.keys(single).length ? [single] : []
       setUsers(arr)
       if (arr.length) {
@@ -76,7 +81,7 @@ export const Settings = () => {
   useEffect(() => {
     const rawBots = localStorage.getItem(LS_BOTS)
     if (rawBots) {
-      const parsed = parseJSON<Bot[], Bot[]>(rawBots, [])
+      const parsed = parseJSON<Bot[]>(rawBots, [])
       setBots(parsed)
       const cur = localStorage.getItem(LS_CURRENT_BOT)
       if (cur) {
@@ -153,7 +158,7 @@ export const Settings = () => {
     setShowBotModal(false)
   }
 
-  const persistAllAndBack = () => {
+ /* const persistAllAndBack = () => {
     localStorage.setItem(LS_USERS, JSON.stringify(users))
     if (currentUserId) localStorage.setItem(LS_CURRENT_USER, String(currentUserId))
     localStorage.setItem(LS_BOTS, JSON.stringify(bots))
@@ -161,7 +166,7 @@ export const Settings = () => {
     const curBot = bots.find((b) => String(b.id) === String(currentBotId))
     if (curBot?.token) storage.set('token', curBot.token)
     window.history.back()
-  }
+  }*/
   
   const removeBot = (id: string) => {
       popup({
@@ -255,7 +260,7 @@ const updateUser = (updatedUser: User) => {
 
   if (String(currentUserId) === String(updatedUser.ori_id)) {
     setCurrentUserId(String(updatedUser.id))
-    setEditingUser({})
+    setEditingUser({} as User)
     localStorage.setItem(LS_CURRENT_USER, String(updatedUser.id))
   }
 

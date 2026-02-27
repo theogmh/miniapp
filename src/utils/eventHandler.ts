@@ -5,7 +5,7 @@ import fetchInvoice from '@/utils/openInvoice'
 import {initBiometrics, authenticate} from '@/utils/initBiometrics'
 import {encode, decode} from 'mh-encoder'
 
-export const eventHandler = async(event, context) => {
+export const eventHandler = async(event: any, context: any) => {
     const data = JSON.parse(event.data)
     const {eventType, eventData} = data
     console.log("New Event:", eventType, eventData)
@@ -26,23 +26,23 @@ export const eventHandler = async(event, context) => {
         break
         
         case 'web_app_set_header_color': {
-            const colorKey = eventData.color_key as IThemeParams
+            const colorKey = eventData.color_key as keyof IThemeParams
             const color = eventData.color || themeParams[colorKey] || '#181819'
-            setTheme(p => ({...p, header_color: color }))
+            setTheme((p: any) => ({...p, header_color: color }))
             break
         }
         
         case 'web_app_set_background_color': {
-            const colorKey = eventData.color_key as IThemeParams
+            const colorKey = eventData.color_key as keyof IThemeParams
             const color = eventData.color || themeParams[colorKey] || '#181819'
-            setTheme(p => ({...p, bg_color: color }))
+            setTheme((p: any) => ({...p, bg_color: color }))
             break
         }
         
         case 'web_app_set_bottom_bar_color': {
-            const colorKey = eventData.color_key as IThemeParams
+            const colorKey = eventData.color_key as keyof IThemeParams
             const color = eventData.color || themeParams[colorKey] || '#181819'
-            setTheme(p => ({...p, bottom_bar_color: color}))
+            setTheme((p: any) => ({...p, bottom_bar_color: color}))
             document.documentElement.style.background = color
             break
         }
@@ -86,7 +86,7 @@ export const eventHandler = async(event, context) => {
         break
         
         case 'web_app_setup_closing_behavior':
-            setWebData(p => ({...p, need_confirmation: eventData.need_confirmation }))
+            setWebData((p: any) => ({...p, need_confirmation: eventData.need_confirmation }))
         break
         
         case 'web_app_open_link': {
@@ -102,7 +102,7 @@ export const eventHandler = async(event, context) => {
                     { type: 'cancel' },
                     {
                         text: 'Open',
-                        onClick: ({ checkboxes }) => {
+                        onClick: ({ checkboxes }: { checkboxes: any }) => {
                             const chk = checkboxes[0] || false
                             storage.set('open_links', chk)
                             window.open(eventData.url, '_blank')
@@ -126,7 +126,7 @@ export const eventHandler = async(event, context) => {
                     { type: 'cancel' },
                     {
                         text: 'Open',
-                        onClick: ({ checkboxes }) => {
+                        onClick: ({ checkboxes }: { checkboxes: any }) => {
                             const chk = checkboxes[0] || false
                             storage.set('open_links', chk)
                             window.location.href = `https://t.me${eventData.path_full}`

@@ -12,11 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import CircularProgress from '@mui/material/CircularProgress'
 import {usePopup} from "@/hooks/usePopup"
-import getDeviceId from '@/utils/fp.ts'
 import storage from '@/utils/storage.ts';
-import {encode, decode} from 'mh-encoder';
 import {useNavigate, useLocation} from 'react-router';
-import fetchInvoice from '@/utils/openInvoice'
 import {Star} from '@/assets/Icons'
 import {FloatingMenu} from '@/components/FloatingMenu'
 import {eventHandler} from '@/utils/eventHandler'
@@ -90,70 +87,6 @@ interface WebData {
     need_confirmation?: boolean;
 }
 
-interface IResult {
-    access_granted: boolean
-    access_requested: boolean
-    device_id?: string | null
-    available: boolean
-    token_saved?: boolean
-    type?: string
-}
-
-async function initBiometrics() {
-    let result: IResult = {
-        access_granted: false,
-        access_requested: false,
-        device_id: null,
-        available: false,
-        token_saved: false,
-        type: 'unknown'
-    };
-
-    if (!window.PublicKeyCredential) return result;
-
-    result.access_requested = storage.get('bm_allowed');
-    try {
-        const isAvailable = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-        result.available = isAvailable;
-        if (isAvailable) {
-            result.access_granted = storage.get('bm_allowed');
-            result.device_id = await getDeviceId();
-            result.type = 'fingerprint';
-            result.token_saved = storage.get('bm_token') ? true : false;
-            if (navigator.userAgent.toLowerCase().includes('face')) result.type = 'face';
-        }
-    } catch (e) {}
-
-    return result;
-}
-
-async function authenticate(rs: string = '') {
-    try {
-        const challenge = crypto.getRandomValues(new Uint8Array(32));
-  const userId = crypto.getRandomValues(new Uint8Array(16));
-
-  const publicKey: PublicKeyCredentialCreationOptions = {
-    challenge,
-    rp: { name: rs },
-    user: {
-        id: userId,
-        name: "user@example.com",
-        displayName: "Example User"
-    },
-    pubKeyCredParams: [{ alg: -7, type: "public-key" as const }],
-    authenticatorSelection: {
-        authenticatorAttachment: "platform" as AuthenticatorAttachment
-    },
-    timeout: 60000
-  };
-
-   return await navigator.credentials.create({ publicKey });
-    } catch(err: any) {
-        console.log(err);
-        return false;
-    }
-}
-
 interface AccelerometerOptions {
   frequency?: number;
 }
@@ -191,7 +124,7 @@ export default function Home() {
     
     const setHeaderVisibility = (st: boolean) => {
         setHideHeader(st)
-        localStorage.setItem('_tg_header_visible', st)
+        localStorage.setItem('_tg_header_visible', String(st))
     }
     
     const postEvent = (eventType: string, eventData: any = '') => {
@@ -206,7 +139,7 @@ export default function Home() {
         else window.location.reload()
    }
   
-   const setAm = (rr: boolean | number = 1000) => {
+   const setAm = (rr: any = 1000) => {
        try {
        if (rr === false) {
            sensorRef.current?.stop();
@@ -236,14 +169,14 @@ export default function Home() {
     
     useEffect(() => {
             
-        const invoiceDiv = (result) => {
+        const invoiceDiv = (result: any) => {
             return <div>
                      <div className='flex items-center space-x-1'><span className='flex items-center'> Do you want to buy {result.title} for </span> <Star className='w-[1.3em]'/> <span className='flex items-center'>{result.stars}?</span> </div>
                      <b className='py-0.5'>{result.desc}</b>
                 </div>
         }
         
-        const context = { setBackBtn, setMainBtn, popup, postEvent, popup, setTheme, setClosed, setWebData, invoiceDiv, setStgBtn, setAm, setReloadSupported, setTitle }
+        const context = { setBackBtn, setMainBtn, popup, postEvent, setTheme, setClosed, setWebData, invoiceDiv, setSecBtn, setStgBtn, setAm, setReloadSupported, setTitle }
         window.addEventListener('message', (ev) => eventHandler(ev, context))
         
     }, [])

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, useEffect, ReactElement } from "react";
+import { createContext, useContext, useState, useRef, useEffect, type ReactElement } from "react";
 import type {ReactNode, ElementType} from 'react'
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -16,8 +16,8 @@ placeholder?: string;
 value?: string;
 Icon?: ElementType,
 onChange?: (data: InputOnChange) => void;
-type: "text" | "number";
-onlyNumbers: boolean;
+type?: "text" | "number";
+onlyNumbers?: boolean;
 [key: string]: any;
 }
 

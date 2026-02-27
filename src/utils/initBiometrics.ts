@@ -1,4 +1,14 @@
 import storage from '@/utils/storage.ts'
+import getDeviceId from '@/utils/fp.ts'
+
+interface IResult {
+    access_granted: boolean
+    access_requested: boolean
+    device_id?: string | null
+    available: boolean
+    token_saved?: boolean
+    type?: string
+}
 
 export async function initBiometrics() {
     let result: IResult = {
