@@ -17,19 +17,30 @@ interface Fields {
     signature: string;
 }
 
-export default function makeInitData(botToken: string = '4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc', webUrl: string) {
+export default function makeInitData(webUrl: string) {
 
-  const userData = JSON.parse(localStorage.getItem('__tg_user') || '{}');
+  const usId = Number(localStorage.getItem('_tg_current_user'))
+  const users = JSON.parse(localStorage.getItem('_tg_users') || '[]')
+
+  const userData = users.find(u => u.id === usId) || {}
+  
+  const hasNotName = !userData.first_name && !userData.last_name
   
   const user: User = {
     id: userData.id || 1234567890,
-    first_name: userData.first_name || "Test",
-    last_name: userData.last_name || "User",
-    username: userData.username || "test_user",
-    language_code: userData.language_code || "en",
+    first_name: hasNotName ? 'Test' : userData.first_name ||  "",
+    last_name: userData.last_name || "",
+    username: userData.username || "",
+    language_code: "en",
     allows_write_to_pm: true,
     photo_url: userData.photo_url || "",
   };
+  
+  const botId = localStorage.getItem('_tg_current_bot')
+  const bots = JSON.parse(localStorage.getItem('_tg_bots') || '[]')
+  
+  const botData = bots.find(u => u.id === botId) || { token: '123456789:abcDefGH-JklmM0opQ5RStuvWxyz' }
+  const botToken = botData.token
 
   const query_id: string = "AAGTxYhxAwAAAJPFiHGWuU3c";
   const auth_date: number = Math.floor(Date.now() / 1000);

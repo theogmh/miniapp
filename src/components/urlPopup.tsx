@@ -17,12 +17,12 @@ interface UrlPopupProps {
   onSubmit: (url: string) => void;
 }
 
-function isUrl(str: string) {
+function isUrl(str: string): boolean {
   try {
-    new URL(str);
-    return true;
-  } catch (_) {
-    return false;
+    const url = new URL(str)
+    return url.protocol === "http:" || url.protocol === "https:"
+  } catch {
+    return false
   }
 }
 

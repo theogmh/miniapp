@@ -16,6 +16,10 @@ import getDeviceId from '@/utils/fp.ts'
 import storage from '@/utils/storage.ts';
 import {encode, decode} from 'mh-encoder';
 import {useNavigate, useLocation} from 'react-router';
+import fetchInvoice from '@/utils/openInvoice'
+import {Star} from '@/assets/Icons'
+import {FloatingMenu} from '@/components/FloatingMenu'
+import {eventHandler} from '@/utils/eventHandler'
 
 interface BackBtn {
     is_visible?: boolean;
@@ -82,25 +86,6 @@ const themeParams: IThemeParams = {
     header_color: '#181818'
   };
   
-function enterFullscreen(element = document.documentElement) {
-    if ((element as any).requestFullscreen) {
-        (element as any).requestFullscreen();
-    } else if ((element as any).webkitRequestFullscreen) { 
-        (element as any).webkitRequestFullscreen();
-    } else if ((element as any).msRequestFullscreen) { 
-        (element as any).msRequestFullscreen(); 
-    }
-}
-
-function exitFullscreen() {
-    if ((document as any).exitFullscreen) {
-        (document as any).exitFullscreen();
-    } else if ((document as any).webkitExitFullscreen) { 
-        (document as any).webkitExitFullscreen();
-    } else if ((document as any).msExitFullscreen) { 
-        (document as any).msExitFullscreen();
-    }
-}
 interface WebData {
     need_confirmation?: boolean;
 }
@@ -194,6 +179,9 @@ export default function Home() {
     const [secBtn, setSecBtn] = useState<SecBtn>({})
     const [closed, setClosed] = useState<boolean>(false)
     const [theme, setTheme] = useState<IThemeParams>({});
+    const [hideHeader, setHideHeader] = useState<boolean>(localStorage.getItem('_tg_header_visible') === 'true' || false)
+    const [reloadSupported, setReloadSupported] = useState<boolean>(false)
+    const [title, setTitle] = useState<string>('Mini App')
     const {popup} = usePopup();
     const container = useRef(null);
     const [webData, setWebData] = useState<WebData>({});
@@ -201,8 +189,9 @@ export default function Home() {
     const navigate = useNavigate();
     const location = useLocation()
     
-    const reload = () => {
-        window.location.reload();
+    const setHeaderVisibility = (st: boolean) => {
+        setHideHeader(st)
+        localStorage.setItem('_tg_header_visible', st)
     }
     
     const postEvent = (eventType: string, eventData: any = '') => {
@@ -210,6 +199,11 @@ export default function Home() {
           webapp.current?.contentWindow?.postMessage(JSON.stringify({
               eventType, eventData
           }), '*');
+   }                
+   
+   const reload = () => {
+        if (reloadSupported) postEvent('reload_iframe')
+        else window.location.reload()
    }
   
    const setAm = (rr: boolean | number = 1000) => {
@@ -220,7 +214,7 @@ export default function Home() {
            return true;
        }
        if ('Accelerometer' in window) {
-           if (typeof rr !== 'string') return
+           if (!rr) return
            const sensor = new Accelerometer({frequency: 1000 / rr});
            sensor.addEventListener('reading', () => {
                postEvent('accelerometer_changed', {
@@ -241,297 +235,17 @@ export default function Home() {
    }
     
     useEffect(() => {
-        window.addEventListener('message', async(event) => {
-              const data = JSON.parse(event.data);
-              const {eventType, eventData} = data;
-              console.log("New Event:", eventType, eventData);
-              
-             if (eventType === 'web_app_setup_back_button') {
-                 setBackBtn(eventData)
-             }
-             
-             if (eventType === "web_app_setup_main_button") {
-                 setMainBtn({...eventData, event: 'main_button_pressed'});
-             }
-             
-             if (eventType === 'web_app_setup_secondary_button') {
-                 setSecBtn({...eventData, event: 'secondary_button_pressed'})
-             }
-             
-             if (eventType === 'web_app_set_header_color') {
-                 type ThemeKeys = keyof typeof themeParams;
-                 const colorKey = eventData.color_key as ThemeKeys;
-                 const color = eventData.color || themeParams[colorKey] || '#181819'
-                 setTheme(p => ({...p, header_color: color}))
-             }
-             
-             if (eventType === 'web_app_set_background_color') {
-                 type ThemeKeys = keyof typeof themeParams;
-                 const colorKey = eventData.color_key as ThemeKeys;
-                 const color = eventData.color || themeParams[colorKey] || '#181819'
-                 setTheme(p => ({...p, bg_color: color}));
-             }
-             
-             if (eventType === 'web_app_set_bottom_bar_color') {
-                 type ThemeKeys = keyof typeof themeParams;
-                 const colorKey = eventData.color_key as ThemeKeys;
-                 const color = eventData.color || themeParams[colorKey] || '#181819'
-                 setTheme(p => ({...p, bottom_bar_color: color}));
-                 document.documentElement.style.background = color;
-             }
-             
-             if (eventType === 'web_app_open_popup') {
-                 const _btns = (eventData.buttons as Array<{ id: string; onClick?: () => void }>).map((b) => {
-                     b.onClick = () => {
-                         postEvent('popup_closed', {button_id: b.id})
-                     }
-                     return b;
-                 })
-                 popup({...eventData, buttons: _btns.reverse(), onClose: () => postEvent('popup_closed')});
-             }
-             
-             if (eventType === 'web_app_request_fullscreen') {
-                 try {
-                     enterFullscreen();
-                 } catch(err: any) {
-                     popup({message: 'This mini app needs to open in full screen', title: 'Fullscreen request', buttons: [
-                         {text: 'Ok', onClick: () => enterFullscreen()},
-                     ],
-                     onClose: () => enterFullscreen()
-                     })
-                 }
-             }
-             
-             if (eventType === 'web_app_exit_fullscreen') {
-                 exitFullscreen()
-             }
-             
-             if (eventType === 'web_app_expand') {
-                 setClosed(false)
-             }
-             
-             if (eventType === 'web_app_close') {
-                 setClosed(true)
-             }
-             
-             if (eventType === 'web_app_setup_closing_behavior') {
-                 setWebData(p => ({...p, need_confirmation: eventData.need_confirmation}))
-             }
-             
-             if (eventType === 'web_app_open_link') {
-                 window.open(eventData.url, '_blank')
-             }
-             
-             if (eventType === 'web_app_open_tg_link') {
-                 window.location.href = `https://t.me${eventData.path_full}`
-             }
-             
-             if (eventType === 'web_app_open_invoice') {
-                 window.location.href = `https://t.me/$${eventData.slug}`
-             }
-             
-             if (eventType === 'web_app_biometry_get_info') {
-                 const bd = await initBiometrics();
-                 postEvent('biometry_info_received', bd)
-             }
-             
-             if (eventType === 'web_app_biometry_request_access') {
-                 if (storage.get('bm_allowed')) {
-                     const bd = await initBiometrics();
-                     return postEvent('biometry_info_received', bd)
-                 }
-                 
-                 async function rqa() {
-                     if (await authenticate()) {
-                     storage.set('bm_allowed', true);
-                     const bd = await initBiometrics();
-                     bd.access_granted = true;
-                     postEvent('biometry_info_received', bd)
-                     }
-                 }
-                 
-                 popup({message: `Do you want to allow device biometrics?\n${eventData.reason || ''}`, title: 'Biometric Request', buttons: [
-                     {text: 'Cancel'},
-                     {text: 'Allow', onClick: rqa},
-                 ]});
-             } 
-             
-             if (eventType === 'web_app_biometry_request_auth') {
-                 const isAuth = await authenticate(eventData.reason)
-                 if (isAuth) {
-                     const btk = storage.get('bm_token');
-                     postEvent('biometry_auth_requested', {
-                         status: 'authorized',
-                         token: btk ? decode(btk) : undefined
-                     });
-                 } else {
-                     postEvent('biometry_auth_requested', {
-                         status: 'failed'
-                     })                     
-                 }
-             } 
-             
-             if (eventType === 'web_app_biometry_update_token') {
-                 storage.set('bm_token', encode(eventData.token));
-                 postEvent('biometry_token_updated', {status: 'updated'});
-             }
-             
-             if (eventType === 'web_app_setup_settings_button') {
-                 setStgBtn(eventData);
-             }
-             
-             if (eventType === 'web_app_invoke_custom_method') {
-                 if (eventData.method === 'saveStorageValue') {
-                 try {
-                     const cs = storage.get('cloud_storage') || {};
-                     cs[eventData.params.key] = eventData.params.value;
-                     storage.set('cloud_storage', cs);
-                     postEvent('custom_method_invoked', {req_id: eventData.req_id, result: true});
-                 } catch(err: any) {
-                     postEvent('custom_method_invoked', {req_id: eventData.req_id, result: false, error: 'Couldn’t save to cloud storage'})
-                 }
-                 } else if (eventData.method === 'getStorageValues') {
-                 try {
-                     const cs = storage.get('cloud_storage') || {};
-                     const result: any = {};
-                     (eventData.params.keys as string[]).forEach((v: string) => {
-                         result[v] = cs[v] ?? undefined;
-                     });
-                     postEvent('custom_method_invoked', {req_id: eventData.req_id, result});
-                 } catch(err: any) {
-                     postEvent('custom_method_invoked', {req_id: eventData.req_id, result: false, error: err.message})
-                 }
-                 } else if (eventData.method === 'deleteStorageValues') {
-                 try {
-                     const cs = storage.get('cloud_storage') || {};
-                     (eventData.params.keys as string[]).forEach((v: string) => {
-                         delete cs[v];
-                     });
-                     storage.set('cloud_storage', cs);
-                     postEvent('custom_method_invoked', {req_id: eventData.req_id, result: true});
-                 } catch(err: any) {
-                     postEvent('custom_method_invoked', {req_id: eventData.req_id, result: false, error: err.message})
-                 }
-                 } else if (eventData.method === 'getStorageKeys') {
-                 try {
-                     const cs = storage.get('cloud_storage') || {};
-                     const result = Object.keys(cs);
-                     postEvent('custom_method_invoked', {req_id: eventData.req_id, result});
-                 } catch(err: any) {
-                     postEvent('custom_method_invoked', {req_id: eventData.req_id, result: false, error: err.message})
-                 }
-                 }
-                 
-             }
-             if (eventType === 'web_app_start_accelerometer') {
-                 postEvent('accelerometer_started');
-                 setAm(eventData.refresh_rate);
-             }
-             if (eventType === 'web_app_stop_accelerometer') {
-                 setAm(false);
-             }
-             if (eventType === 'web_app_start_device_orientation') {
-                 postEvent('device_orientation_failed', {error: 'UNSUPPORTED'});
-             }
-             if (eventType === 'web_app_start_gyroscope') {
-                 postEvent('gyroscope_failed', {error: 'UNSUPPORTED'});
-             }
-             if (eventType === 'web_app_check_location') {
-                 const available = 'geolocation' in navigator;
-                 const granted = storage.get('lc_allowed') || false;
-                 postEvent('location_checked', {available, access_requested: granted, access_granted: granted});
-             }
-             if (eventType === 'web_app_request_location') {
-                 try {
-                     const getLocation = () => {
-                     navigator.geolocation.getCurrentPosition(pos => {
-                     postEvent('location_requested', pos.coords)
-                     },
-                     err => {
-                         console.log(err.message)
-                     }
-                     )
-                 }
-                 if (!storage.get('lc_allowed')) {
-                     popup({
-                         message: "Do you want to allow your geolocation?",
-                         title: "Location request",
-                         buttons: [
-                             {
-                                 text: 'Cancel'
-                             },
-                             {text: 'Allow', onClick: () => {
-                                 storage.set('lc_allowed', true);
-                                 getLocation();
-                             }},
-                         ]
-                     })
-                 } else {
-                     getLocation()
-                 }
-                 } catch(err: any) {
-                    console.log(err) 
-                 }                                
-             }
-             if (eventType === 'web_app_device_storage_save_key') {
-                 try {
-                     const ds = storage.get('device_storage') || {};
-                     ds[eventData.key] = eventData.value;
-                     storage.set('device_storage', ds);
-                     postEvent('device_storage_key_saved', {req_id: eventData.req_id});
-                 } catch(err: any) {
-                     postEvent('device_storage_failed', {req_id: eventData.req_id, error: err.message});
-                 }
-             }
-             if (eventType === 'web_app_device_storage_get_key') {
-                 try {
-                     const ds = storage.get('device_storage') || {};
-                     const value = ds[eventData.key];
-                     postEvent('device_storage_key_received', {req_id: eventData.req_id, value});
-                 } catch(err: any) {
-                     postEvent('device_storage_failed', {req_id: eventData.req_id, error: err.message});
-                 }
-             }
-             if (eventType === 'web_app_device_storage_clear') {
-                 try {
-                     storage.set('device_storage', {});
-                     postEvent('device_storage_cleared', {req_id: eventData.req_id});
-                 } catch(err: any) {
-                     postEvent('device_storage_failed', {req_id: eventData.req_id, error: err.message});
-                 }
-             }
-             
-             if (eventType === 'web_app_secure_storage_save_key') {
-                 try {
-                     const ss = storage.get('secure_storage') || {};
-                     ss[eventData.key] = eventData.value;
-                     storage.set('secure_storage', ss);
-                     postEvent('secure_storage_key_saved', {req_id: eventData.req_id});
-                 } catch(err: any) {
-                     postEvent('secure_storage_failed', {req_id: eventData.req_id, error: err.message});
-                 }
-             }
-             if (eventType === 'web_app_secure_storage_get_key') {
-                 try {
-                     const ss = storage.get('secure_storage') || {};
-                     const value = ss[eventData.key];
-                     postEvent('secure_storage_key_received', {req_id: eventData.req_id, value});
-                 } catch(err: any) {
-                     postEvent('secure_storage_failed', {req_id: eventData.req_id, error: err.message});
-                 }
-             }
-             if (eventType === 'web_app_secure_storage_clear') {
-                 try {
-                     storage.set('secure_storage', {});
-                     postEvent('secure_storage_cleared', {req_id: eventData.req_id});
-                 } catch(err: any) {
-                     postEvent('secure_storage_failed', {req_id: eventData.req_id, error: err.message});
-                 }
-             }
-             if (eventType === 'web_app_secure_storage_restore_key') {
-                     postEvent('secure_storage_failed', {req_id: eventData.req_id, error: 'RESTORE_UNAVAILABLE'});
-             }
-        })
+            
+        const invoiceDiv = (result) => {
+            return <div>
+                     <div className='flex items-center space-x-1'><span className='flex items-center'> Do you want to buy {result.title} for </span> <Star className='w-[1.3em]'/> <span className='flex items-center'>{result.stars}?</span> </div>
+                     <b className='py-0.5'>{result.desc}</b>
+                </div>
+        }
+        
+        const context = { setBackBtn, setMainBtn, popup, postEvent, popup, setTheme, setClosed, setWebData, invoiceDiv, setStgBtn, setAm, setReloadSupported, setTitle }
+        window.addEventListener('message', (ev) => eventHandler(ev, context))
+        
     }, [])
     
     useEffect(() => {
@@ -539,10 +253,8 @@ export default function Home() {
     if (!url && !storedUrl) return setOpen(true);
 
     const u = url || storedUrl;
-    
-    const tk = storage.get('token') || '7706964024:AAGvYJF6A6IuS81H7-JMgHql4vaioituaHc';
         
-    const data = makeInitData(tk, u + location.pathname + location.search);
+    const data = makeInitData(u + location.pathname + location.search);
 
     setWebUrl(prev => (prev !== data ? data : prev));
     }, [url])
@@ -553,6 +265,20 @@ export default function Home() {
         else return b;
     }
     
+    const handleBack = () => {
+        if (!backBtn.is_visible) {
+        if (!webData.need_confirmation) setClosed(true);
+        else popup({
+                 message: 'Do you want to close miniapp?', title: 'Close App', 
+                 buttons: [
+                     {text: 'Cancel'},
+                     {text: 'Close', type: 'destructive', onClick: () => setClosed(true)}
+                 ]
+             })
+        }
+        postEvent('back_button_pressed')
+    }
+     
     return(<div className="w-screen h-[100dvh] text-white flex flex-col" style={{
         background: theme.bg_color || themeParams.bg_color
     }} ref={container}>
@@ -564,36 +290,25 @@ export default function Home() {
             setOpen(false);
         }}/>
         
-        {!closed && <header className="w-full p-2 flex justify-between border-b-1 border-[#333]" style={{
+        {hideHeader && <FloatingMenu reload={reload} onShow={() => setHeaderVisibility(false)} onSettings={() => postEvent('settings_button_pressed')} backText={backBtn.is_visible ? 'Back' : 'Close' } onBack={handleBack}/>}
+        
+        {!closed && !hideHeader && <header className="w-full p-2 flex justify-between border-b-1 border-[#333]" style={{
             background: theme.header_color || themeParams.bg_color
         }}>
             <div className="flex gap-2 items-center">
-            <button onClick={() => {
-                if (!backBtn.is_visible) {
-                    if (!webData.need_confirmation) setClosed(true);
-                    else popup({message: 'Do you want to close miniapp?', title: 'Close App', buttons: [
-                        {text: 'Cancel'},
-                        {text: 'Close', type: 'destructive', onClick: () => setClosed(true)}
-                    ]})
-                };
-                postEvent('back_button_pressed')
-            }} className="ripple px-1.5 rounded-full">{backBtn.is_visible ? <ArrowLeft /> : <X />}</button>
+            <button onClick={handleBack} className="ripple px-1.5 rounded-full">{backBtn.is_visible ? <ArrowLeft /> : <X />}</button>
             <div className='w-full flex'>
-            <span className="font-bold">MiniApp</span>
+            <span className="font-bold">{title || 'Mini App'}</span>
             </div>
             </div>
             {<DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button aria-label="Open menu" size="icon-sm" className="rounded-full ripple">            
+        <DropdownMenuTrigger className='bg-transparent active:bg-transparent' asChild>
+          <Button aria-label="Open menu" size="icon-sm" className="rounded-full hover:bg-transparent">            
             <EllipsisVertical />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40 bg-[#222] border-[#444] text-white" align="end">
           <DropdownMenuGroup>
-            <DropdownMenuItem onSelect={() => setOpen(true)} className="ripple focus:transparent">
-              <span>Change URL</span>
-            </DropdownMenuItem>
-            
             <DropdownMenuItem onSelect={() => reload()} className="ripple focus:transparent">
               <span>Reload</span>
             </DropdownMenuItem>
@@ -602,8 +317,20 @@ export default function Home() {
               <span>Settings</span>
             </DropdownMenuItem>}
             
-            <DropdownMenuItem onSelect={() => navigate('/edit')} className="ripple focus:transparent">
-             <span>Edit</span>
+            <DropdownMenuItem onSelect={() => navigate('/settings')} className="ripple focus:transparent">
+             <span>Users & Bots</span>
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem onSelect={() => navigate('/webs')} className="ripple focus:transparent">
+             <span>Mini Apps</span>
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem onSelect={() => navigate('/docs')} className="ripple focus:transparent">
+             <span>Docs</span>
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem onSelect={() => setHeaderVisibility(true)} className="ripple focus:transparent">
+             <span>Hide Header</span>
             </DropdownMenuItem>
             
           </DropdownMenuGroup>
@@ -627,7 +354,7 @@ export default function Home() {
         {closed && <div className="flex w-screen h-screen fixed top-0 left-0 z-4 justify-center items-center flex-col gap-2 overflow-hidden bg-[#333]">
             <h3 className="text-2xl">Closed</h3>
             <p className="text-[#999]">Miniapp closed</p>
-            <button className="py-2 px-10 bg-blue-500 rounded-xl ripple" onClick={() => setClosed(false)}>Open</button>
+            <button className="py-2 px-10 bg-blue-500 rounded-xl ripple" onClick={() => { reload(); setClosed(false) }}>Open</button>
         </div>}
         
         {!webUrl && <div className="flex w-screen h-screen fixed top-0 left-0 z-4 justify-center items-center flex-col gap-2 overflow-hidden bg-[#333]">

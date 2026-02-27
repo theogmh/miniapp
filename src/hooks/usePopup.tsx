@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, useEffect } from "react";
+import { createContext, useContext, useState, useRef, useEffect, ReactElement } from "react";
 import type {ReactNode, ElementType} from 'react'
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -44,7 +44,7 @@ interface PopupRadio {
     values: RadioValues[]
 }
 
-interface PopupOptions { title?: string; message?: string; inputs?: PopupInput[]; checkboxes?: PopupCheckbox[]; buttons?: PopupButton[]; radio?: PopupRadio, onClose?: () => void }
+interface PopupOptions { title?: string; message?: string | ReactElement; inputs?: PopupInput[]; checkboxes?: PopupCheckbox[]; buttons?: PopupButton[]; radio?: PopupRadio, onClose?: () => void }
 
 type PopupContextType = { popup: (options: PopupOptions) => void; };
 
@@ -103,7 +103,7 @@ return ( <PopupContext.Provider value={{ popup }}> {children} {options && ( <div
         
         <div className="flex flex-col gap-0.25">
         <h2 className="text-xl font-semibold text-[#007bff]">{options.title || 'Popup'}</h2>
-        {options.message && <p className="text-neutral-300 text-sm mt-2">{options.message}</p>}
+        {options.message && <div className="text-neutral-300 text-sm mt-2">{options.message}</div>}
         </div>
 
 {options?.inputs && (
