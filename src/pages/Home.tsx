@@ -114,7 +114,7 @@ export default function Home() {
     const [theme, setTheme] = useState<IThemeParams>({});
     const [hideHeader, setHideHeader] = useState<boolean>(localStorage.getItem('_tg_header_visible') === 'true' || false)
     const [reloadSupported, setReloadSupported] = useState<boolean>(false)
-    const [title, setTitle] = useState<string>('Mini App')
+    const [title, setTitle] = useState<string>('Miniapp')
     const {popup} = usePopup();
     const container = useRef(null);
     const [webData, setWebData] = useState<WebData>({});
@@ -231,7 +231,7 @@ export default function Home() {
             <div className="flex gap-2 items-center">
             <button onClick={handleBack} className="ripple px-1.5 rounded-full">{backBtn.is_visible ? <ArrowLeft /> : <X />}</button>
             <div className='w-full flex'>
-            <span className="font-bold">{title || 'Mini App'}</span>
+            <span className="font-bold">{title || 'Miniapp'}</span>
             </div>
             </div>
             {<DropdownMenu modal={false}>
@@ -255,7 +255,7 @@ export default function Home() {
             </DropdownMenuItem>
             
             <DropdownMenuItem onSelect={() => navigate('/webs')} className="ripple focus:transparent">
-             <span>Mini Apps</span>
+             <span>Miniapps</span>
             </DropdownMenuItem>
             
             <DropdownMenuItem onSelect={() => navigate('/docs')} className="ripple focus:transparent">

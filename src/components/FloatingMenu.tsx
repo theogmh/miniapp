@@ -95,7 +95,7 @@ export const FloatingMenu: React.FC<FloatingMenuProps> = ({ onShow, reload, titl
           <button className="px-2 py-1 active:bg-[#444] rounded-sm text-left transition-colors duration-200" onClick={reload}>Reload</button>
           <button className="px-2 py-1 active:bg-[#444] rounded-sm text-left transition-colors duration-200" onClick={onSettings}>Settings</button>
           <Link className="px-2 py-1 active:bg-[#444] rounded-sm transition-colors duration-200" to='/settings'>Users & Bot</Link>
-          <Link className="px-2 py-1 active:bg-[#444] rounded-sm transition-colors duration-200" to='webs'>Mini Apps</Link>
+          <Link className="px-2 py-1 active:bg-[#444] rounded-sm transition-colors duration-200" to='/webs'>Mini Apps</Link>
           <button className="px-2 py-1 active:bg-[#444] rounded-sm text-left transition-colors duration-200" onClick={onShow}>Show Header</button>
           <button className="px-2 py-1 active:bg-[#444] rounded-sm text-left transition-colors duration-200" onClick={onBack}>{backText || 'Close'}</button>
         </div>
