@@ -20,7 +20,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-verce.json
-tg-miniapp.js
-wrangler.js
