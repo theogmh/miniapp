@@ -43,7 +43,7 @@ A **modern, super-fast Telegram MiniApp testing tool** that lets you experiment 
 You can run the project locally:
 
 ```bash
-git clone https://github.com/mohaabinasir/miniapp.git
+git clone https://github.com/theogmh/miniapp.git
 cd miniapp
 npm install
 npm run dev
