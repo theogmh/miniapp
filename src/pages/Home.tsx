@@ -262,6 +262,10 @@ export default function Home() {
              <span>Docs</span>
             </DropdownMenuItem>
             
+            <DropdownMenuItem onSelect={() => window.location.href = 'https://t.me/mhminiapp'} className="ripple focus:transparent">
+             <span>Channel</span>
+            </DropdownMenuItem>
+            
             <DropdownMenuItem onSelect={() => setHeaderVisibility(true)} className="ripple focus:transparent">
              <span>Hide Header</span>
             </DropdownMenuItem>
