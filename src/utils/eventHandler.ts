@@ -5,12 +5,42 @@ import fetchInvoice from '@/utils/openInvoice'
 import {initBiometrics, authenticate} from '@/utils/initBiometrics'
 import {encode, decode} from 'mh-encoder'
 
+export const getTheme = (theme?: 'system' | 'dark' | 'light') => {
+    const isDark =
+    theme === 'dark'
+      ? true
+      : theme === 'light'
+      ? false
+      : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const white = !isDark
+    
+    const bg = white ? '#ffffff' : '#000000'
+    const tc = white ? '#000000' : '#ffffff'
+  
+    return {
+        bg_color: bg,
+        button_color: "#3B82F6",
+        button_text_color: "#ffffff",
+        hint_color: "#ffffff",
+        link_color: "#3B82F6",
+        secondary_bg_color: bg,
+        text_color: tc,
+        header_bg_color: bg,
+        accent_text_color: '#ffffff',
+        section_bg_color: "#212121",
+        section_header_text_color: "#3B82F6",
+        subtitle_text_color: "#aaaaaa",
+        destructive_text_color: "#ff595a",    
+        bottom_bar_bg_color: bg
+    }
+}
+
 export const eventHandler = async(event: any, context: any) => {
     const data = JSON.parse(event.data)
     const {eventType, eventData} = data
     console.log("New Event:", eventType, eventData)
     
-    const { setBackBtn, setMainBtn, setSecBtn, setTheme, popup, postEvent, setClosed, setWebData, invoiceDiv, setStgBtn, setAm, setReloadSupported, setTitle } = context
+    const { setBackBtn, setMainBtn, setSecBtn, setTheme, popup, postEvent, setClosed, setWebData, invoiceDiv, setStgBtn, setAm, setReloadSupported, setTitle, theme, appTheme } = context
     
     switch (eventType) {
         case 'web_app_setup_back_button':
@@ -26,9 +56,9 @@ export const eventHandler = async(event: any, context: any) => {
         break
         
         case 'web_app_set_header_color': {
-            const colorKey = eventData.color_key as keyof IThemeParams
-            const color = eventData.color || themeParams[colorKey] || '#181819'
-            setTheme((p: any) => ({...p, header_color: color }))
+            const colorKey = eventData.color_key as string
+            const color = eventData.color || theme[colorKey]
+            setTheme((p: any) => ({...p, header_bg_color: color }))
             break
         }
         
@@ -43,7 +73,7 @@ export const eventHandler = async(event: any, context: any) => {
             const colorKey = eventData.color_key as keyof IThemeParams
             const color = eventData.color || themeParams[colorKey] || '#181819'
             setTheme((p: any) => ({...p, bottom_bar_color: color}))
-            document.documentElement.style.background = color
+            document.documentElement.style.backgroundColor = color
             break
         }
         
@@ -384,6 +414,8 @@ export const eventHandler = async(event: any, context: any) => {
         case 'app_title':
             setTitle(eventData.title)
         break
-        
+        case 'web_app_request_theme':
+            postEvent('theme_changed', { theme_params: getTheme(appTheme) })
+        break
     }
 }

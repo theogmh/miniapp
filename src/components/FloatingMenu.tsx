@@ -8,10 +8,13 @@ type FloatingMenuProps = {
   title?: string
   onSettings: () => void
   backText: string
-  onBack: () => void
+  onBack: () => void,
+  changeTheme: () => void
+  hasSettings?: boolean | undefined
+  appTheme: 'light' | 'dark' | 'system'
 }
 
-export const FloatingMenu: React.FC<FloatingMenuProps> = ({ onShow, reload, title, onSettings, backText, onBack }) => {
+export const FloatingMenu: React.FC<FloatingMenuProps> = ({ onShow, reload, title, onSettings, backText, onBack, hasSettings, changeTheme, appTheme }) => {
 
   const floatingRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
@@ -84,21 +87,22 @@ export const FloatingMenu: React.FC<FloatingMenuProps> = ({ onShow, reload, titl
     >
       <div
         ref={buttonRef}
-        className="bg-[#222] border-1 border-[#555] text-white rounded-full p-2 flex items-center justify-center shadow-lg"
+        className="bg-popover border-1 border-border text-popover-foreground rounded-full p-2 flex items-center justify-center shadow-lg"
         onClick={handleClick}
       >
         {showList ? <X className='w-5 h-5' /> : <EllipsisVertical className='w-5 h-5' />}
       </div>
       {showList && (
-        <div style={getMenuStyle()} className="bg-[#222] border-1 border-[#444] shadow-md rounded-md py-2 px-1 min-w-40 w-fit flex flex-col text-sm">
-          <p className='px-2 text-xs text-[#ccc]'>{title || 'Mini App'}</p>
-          <button className="px-2 py-1 active:bg-[#444] rounded-sm text-left transition-colors duration-200" onClick={reload}>Reload</button>
-          <button className="px-2 py-1 active:bg-[#444] rounded-sm text-left transition-colors duration-200" onClick={onSettings}>Settings</button>
-          <Link className="px-2 py-1 active:bg-[#444] rounded-sm transition-colors duration-200" to='/settings'>Users & Bot</Link>
-          <Link className="px-2 py-1 active:bg-[#444] rounded-sm transition-colors duration-200" to='/webs'>Mini Apps</Link>
-          <button className="px-2 py-1 active:bg-[#444] rounded-sm text-left transition-colors duration-200" onClick={() => window.location.href = 'https://t.me/mhminiapp'}>Channel</button>
-          <button className="px-2 py-1 active:bg-[#444] rounded-sm text-left transition-colors duration-200" onClick={onShow}>Show Header</button>
-          <button className="px-2 py-1 active:bg-[#444] rounded-sm text-left transition-colors duration-200" onClick={onBack}>{backText || 'Close'}</button>
+        <div style={getMenuStyle()} className="bg-popover border-1 border-border shadow-md rounded-md py-2 px-1 min-w-40 w-fit flex flex-col text-sm popover-foreground">
+          <p className='px-2 text-xs text-muted'>{title || 'Mini App'}</p>
+          <button className="px-2 py-1 active:bg-accent rounded-sm text-left transition-colors duration-200" onClick={() => {reload(); setShowList(false);}}>Reload</button>
+          {hasSettings && <button className="px-2 py-1 active:bg-accent rounded-sm text-left transition-colors duration-200" onClick={() => {onSettings(); setShowList(false)}}>Settings</button>}
+          <Link className="px-2 py-1 active:bg-accent rounded-sm text-left transition-colors duration-200" to='/settings'>Users & Bot</Link>
+          <Link className="px-2 py-1 active:bg-accent rounded-sm text-left transition-colors duration-200" to='/webs'>Mini Apps</Link>
+          <button className="px-2 py-1 active:bg-accent rounded-sm text-left transition-colors duration-200" onClick={() => window.location.href = 'https://t.me/mhminiapp'}>Channel</button>
+          <button className="px-2 py-1 active:bg-accent rounded-sm text-left transition-colors duration-200" onClick={() => { changeTheme(); setShowList(false) }}>{appTheme === 'light' ? 'Dark Mode' : appTheme === 'dark' ? 'System Theme' : 'Light Mode'}</button>
+          <button className="px-2 py-1 active:bg-accent rounded-sm text-left transition-colors duration-200" onClick={onShow}>Show Header</button>
+          <button className="px-2 py-1 active:bg-accent rounded-sm text-left transition-colors duration-200" onClick={() => { onBack(); setShowList(false) }}>{backText || 'Close'}</button>
         </div>
       )}
     </div>

@@ -83,10 +83,10 @@ export const Webs = () => {
     }
     
   return (
-    <div className="w-screen h-screen bg-black text-white flex flex-col">
-      <header className="bg-[#181818] py-3 text-center border-b border-gray-800 relative">
+    <div className="w-screen h-screen bg-background text-foreground flex flex-col">
+      <header className="bg-background py-3 text-center border-b border-border relative">
         <h3 className="text-xl font-semibold tracking-wide">Web Apps</h3>
-        <button className='absolute right-2 top-2.5 bg-blue-500 px-4 py-1 rounded-full min-w-20' onClick={addWeb}>Add</button>
+        <button className='absolute right-2 top-2.5 bg-primary text-primary-foreground px-4 py-1 rounded-full min-w-20' onClick={addWeb}>Add</button>
       </header>
 
       <main className="flex-1 p-4 overflow-y-auto">
@@ -94,7 +94,7 @@ export const Webs = () => {
           {webs.map((web, ind) => (
             <div
               key={ind}
-              className="bg-[#181818] rounded-xl p-4 flex flex-col gap-3 border border-gray-800 hover:border-gray-600 transition-colors duration-200"
+              className="bg-secondary rounded-xl p-4 flex flex-col gap-3 border-1 border-border transition-colors duration-200"
             >
               
               <div className="flex flex-col gap-1">
@@ -104,12 +104,12 @@ export const Webs = () => {
 
               
               <div className="flex flex-col gap-2 mt-2">
-                <button className="flex items-center justify-center gap-2 px-4 py-2 bg-[#ff2a35] hover:bg-[#ff4b50] rounded-lg transition-colors duration-200" onClick={() => deleteWeb(web.url)}>
+                <button className="flex items-center justify-center gap-2 px-4 py-2 bg-destructive text-primary-foreground active:scale-97 rounded-lg transition-transform duration-200" onClick={() => deleteWeb(web.url)}>
                   <Trash2 className="h-5 w-5" />
                   <span>Delete</span>
                 </button>
 
-                <button className="flex items-center justify-center gap-2 px-4 py-2 bg-[#007bff] hover:bg-[#339cff] rounded-lg transition-colors duration-200" onClick={() => openWeb(web.url)}>
+                <button className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:scale-97 rounded-lg transition-transform duration-200" onClick={() => openWeb(web.url)}>
                   <SquareArrowOutUpRight className="h-5 w-5" />
                   <span>Open</span>
                 </button>

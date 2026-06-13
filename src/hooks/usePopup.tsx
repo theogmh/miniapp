@@ -97,13 +97,13 @@ useEffect(() => {
 return ( <PopupContext.Provider value={{ popup }}> {children} {options && ( <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" style={{
         animation: `${isClose ? 'popup-overlay-close' : 'popup-overlay-open'} 0.3s linear forwards`
     }} onClick={() => close()}>
-    <div className="bg-neutral-900 rounded-2xl p-5 bt-3 w-[70%] space-y-4" style={{
+    <div className="bg-secondary rounded-2xl p-5 bt-3 w-[70%] space-y-4" style={{
         animation: `${isClose ? 'popup-close' : 'popup-open'} 0.3s linear forwards`
     }} onClick={(e) => e.stopPropagation()}>
         
         <div className="flex flex-col gap-0.25">
         <h2 className="text-xl font-semibold text-[#007bff]">{options.title || 'Popup'}</h2>
-        {options.message && <div className="text-neutral-300 text-sm mt-2">{options.message}</div>}
+        {options.message && <div className="text-muted text-sm mt-2">{options.message}</div>}
         </div>
 
 {options?.inputs && (
@@ -114,7 +114,7 @@ return ( <PopupContext.Provider value={{ popup }}> {children} {options && ( <div
             
              <div className="relative" key={i}>
               <input
-                className="w-full bg-neutral-800 text-white py-2 outline-none border-[#333] focus:border-[#007bff] bg-transparent border-b transition-border duration-200 pr-7"
+                className="w-full bg-neutral-800 py-2 outline-none border-[#333] focus:border-[#007bff] bg-transparent border-b transition-border duration-200 pr-7 placeholder:text-muted"
                 placeholder={inp.placeholder}
                 type={inp.type}
                 value={inputs[i] || inputs[i] === '' ? inputs[i] : inp.value || ''}

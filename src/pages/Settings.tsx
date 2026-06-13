@@ -268,20 +268,20 @@ const updateUser = (updatedUser: User) => {
 }
 
   return (
-    <div className="w-screen h-screen bg-black text-white overflow-y-auto p-4">
-      <h3 className="w-full flex justify-center items-center bg-black font-semibold mb-4 relative">
+    <div className="w-screen h-screen bg-background overflow-y-auto p-4">
+      <h3 className="w-full flex justify-center items-center font-semibold mb-4 relative">
           <ChevronLeft className='absolute left-0 -top-1' onClick={() => window.history.back()}/>
           User & Bot
       </h3>
 
-      <section className="bg-[#181819] rounded-xl p-4 space-y-3">
+      <section className="bg-secondary rounded-xl p-4 space-y-3">
         <h3 className="text-blue-500 font-semibold">Bots</h3>
         <div className="flex flex-col space-y-3">
           {bots.map((b, ind) => (
             <div
               key={b.id}
-              className={`p-3 border rounded-xl w-full flex items-center ${
-                currentBotId === b.id ? 'border-blue-500' : 'border-gray-700'
+              className={`p-3 border-1 rounded-xl w-full flex items-center ${
+                currentBotId === b.id ? 'border-blue-500' : 'border-muted'
               }`}
               onClick={() => {
                 setCurrentBotId(b.id)
@@ -295,7 +295,7 @@ const updateUser = (updatedUser: User) => {
             </div>
           ))}
           <button
-            className="col-span-2 bg-blue-500 rounded-xl p-2 mt-2"
+            className="col-span-2 bg-primary text-primary-foreground rounded-xl p-2 mt-2"
             onClick={() => {
               setEditingBot({ id: '', token: '' })
               setShowBotModal(true)
@@ -306,14 +306,14 @@ const updateUser = (updatedUser: User) => {
         </div>
       </section>
 
-      <section className="bg-[#181819] rounded-xl p-4 space-y-3 mt-4">
+      <section className="bg-secondary rounded-xl p-4 space-y-3 mt-4">
         <h3 className="text-blue-500 font-semibold">Users</h3>
         <div className="flex flex-col space-y-3">
           {users.map((u) => (
             <div
               key={u.id}
               className={`p-3 border rounded-xl w-full flex items-center ${
-                currentUserId === String(u.id) ? 'border-blue-500' : 'border-gray-700'
+                currentUserId === String(u.id) ? 'border-blue-500' : 'border-muted'
               }`}
               onClick={() => {
                 setCurrentUserId(String(u.id))
@@ -330,7 +330,7 @@ const updateUser = (updatedUser: User) => {
             </div>
           ))}
           <button
-            className="col-span-2 bg-blue-500 rounded-xl p-2 mt-2"
+            className="col-span-2 bg-blue-500 rounded-xl p-2 mt-2 bg-primary text-primary-foreground"
             onClick={() => {
               setEditingUser({} as User)
               setShowUserModal(true)
@@ -341,17 +341,11 @@ const updateUser = (updatedUser: User) => {
         </div>
       </section>
 
-      {/*<div className="w-full flex justify-center items-center p-2 mt-4">
-        <button className="w-[100%] bg-blue-500 rounded-xl p-2" onClick={persistAllAndBack}>
-          Save All
-        </button>
-      </div>*/}
-
       {showUserModal && (
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center animate-fadeIn">
           <div
             ref={userModalRef}
-            className="bg-[#181819] p-6 rounded-xl w-96 space-y-3 animate-slideIn"
+            className="bg-secondary p-6 rounded-xl w-96 space-y-3 animate-slideIn"
           >
             <h3 className="text-lg font-semibold text-blue-500">{editingUser.edit ? 'Edit User' : 'Add User'}</h3>
             <input
@@ -380,11 +374,11 @@ const updateUser = (updatedUser: User) => {
               onChange={(e) => setEditingUser((p) => ({ ...p, username: e.target.value }))}
             />
             <div className="flex gap-2 mt-2">
-              <button className="flex-1 bg-blue-500 rounded-xl p-2 disabled:bg-[#333] transition-colors duration-200" onClick={() => editingUser.edit ? updateUser(editingUser) : saveUser(editingUser)} disabled={!editingUser.id || (!editingUser.first_name && !editingUser.last_name)}>
-                Save
-              </button>
-              <button className="flex-1 bg-red-600 rounded-xl p-2" onClick={() => setShowUserModal(false)}>
+              <button className="flex-1 bg-destructive text-primary-foreground rounded-xl p-2" onClick={() => setShowUserModal(false)}>
                 Cancel
+              </button>
+              <button className="flex-1 bg-primary rounded-xl p-2 disabled:bg-primary/70 transition-colors duration-200 text-primary-foreground" onClick={() => editingUser.edit ? updateUser(editingUser) : saveUser(editingUser)} disabled={!editingUser.id || (!editingUser.first_name && !editingUser.last_name)}>
+                Save
               </button>
             </div>
           </div>
@@ -393,7 +387,7 @@ const updateUser = (updatedUser: User) => {
 
       {showBotModal && (
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center animate-fadeIn">
-          <div ref={botModalRef} className="bg-[#181819] p-6 rounded-xl w-96 space-y-3 animate-slideIn">
+          <div ref={botModalRef} className="bg-secondary p-6 rounded-xl w-96 space-y-3 animate-slideIn">
             <h3 className="text-lg font-semibold text-blue-500">Add Bot</h3>
             <input
               placeholder="Token (required)"
@@ -401,18 +395,18 @@ const updateUser = (updatedUser: User) => {
               onChange={(e) => setEditingBot((p) => ({ ...p, token: e.target.value }))}
             />
             <div className="flex gap-2 mt-2">
-              <button className="flex-1 bg-blue-500 rounded-xl p-2 disabled:bg-[#333] transition-colors duration-200" onClick={() => saveBot(editingBot)} disabled={!editingBot.token?.trim?.()}>
-                Save
-              </button>
-              <button className="flex-1 bg-red-600 rounded-xl p-2" onClick={() => setShowBotModal(false)}>
+              <button className="flex-1 bg-destructive text-primary-foreground rounded-xl p-2" onClick={() => setShowBotModal(false)}>
                 Cancel
+              </button>
+              <button className="flex-1 bg-primary rounded-xl p-2 disabled:bg-primary/70 text-primary-foreground transition-colors duration-200" onClick={() => saveBot(editingBot)} disabled={!editingBot.token?.trim?.()}>
+                Save
               </button>
             </div>
           </div>
         </div>
       )}
       
-      <p className='px-2 py-2.5 text-sm text-[#ccc]'>Note: The selected bot and user will be used to generate valid init data.</p>
+      <p className='px-2 py-2.5 text-sm text-muted'>Note: The selected bot and user will be used to generate valid init data.</p>
 
     </div>
   )

@@ -35,7 +35,7 @@ export default function UrlPopup({setOpen, open = true, onSubmit}: UrlPopupProps
   return (
     <Dialog open={open} onOpenChange={onOpen} modal={true}>
       <form>        
-        <DialogContent className="sm:max-w-[425px] bg-[#181819] text-white border-[#444]">
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Set Website URL</DialogTitle>
             <DialogDescription>
@@ -49,7 +49,7 @@ export default function UrlPopup({setOpen, open = true, onSubmit}: UrlPopupProps
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={!isUrl(url)} onClick={() => onSubmit(url)} className="bg-white text-black">Save</Button> 
+            <Button type="submit" disabled={!isUrl(url)} onClick={() => onSubmit(url)} className="bg-primary text-primary-foreground">Save</Button> 
           </DialogFooter>
         </DialogContent>
       </form>

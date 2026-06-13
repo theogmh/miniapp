@@ -1,6 +1,6 @@
 import makeInitData from '@/utils/makeInitData.ts'
 import {useState, useEffect, useRef} from 'react'
-import {ArrowLeft, EllipsisVertical, X} from 'lucide-react'
+import {ArrowLeft, EllipsisVertical, X, Sun, Laptop, Moon } from 'lucide-react'
 import UrlPopup from '@/components/urlPopup'
 import { Button } from "@/components/ui/button"
 import {
@@ -16,7 +16,8 @@ import storage from '@/utils/storage.ts';
 import {useNavigate, useLocation} from 'react-router';
 import {Star} from '@/assets/Icons'
 import {FloatingMenu} from '@/components/FloatingMenu'
-import {eventHandler} from '@/utils/eventHandler'
+import { useTheme } from "@/hooks/useTheme"
+import { eventHandler, getTheme } from '@/utils/eventHandler'
 
 interface BackBtn {
     is_visible?: boolean;
@@ -48,40 +49,6 @@ interface SecBtn {
 interface StgBtn {
     is_visible?: boolean;
 }
-
-interface IThemeParams {
-    bg_color?: string
-    button_color?: string
-    button_text_color?: string
-    hint_color?: string
-    link_color?: string
-    secondary_bg_color?: string
-    text_color?: string
-    header_bg_color?: string
-    accent_text_color?: string
-    section_bg_color?: string
-    section_header_text_color?: string
-    subtitle_text_color?: string
-    destructive_text_color?: string
-    header_color?: string
-  };
-
-const themeParams: IThemeParams = {
-    bg_color: "#181819",
-    button_color: "#007bff",
-    button_text_color: "#ffffff",
-    hint_color: "#aaaaaa",
-    link_color: "#007bff",
-    secondary_bg_color: "#181818",
-    text_color: "#ffffff",
-    header_bg_color: "#212121",
-    accent_text_color: "#007bff",
-    section_bg_color: "#212121",
-    section_header_text_color: "#007bff",
-    subtitle_text_color: "#aaaaaa",
-    destructive_text_color: "#ff595a",
-    header_color: '#181818'
-  };
   
 interface WebData {
     need_confirmation?: boolean;
@@ -111,7 +78,7 @@ export default function Home() {
     const [stgBtn, setStgBtn] = useState<StgBtn>({})
     const [secBtn, setSecBtn] = useState<SecBtn>({})
     const [closed, setClosed] = useState<boolean>(false)
-    const [theme, setTheme] = useState<IThemeParams>({});
+    const [theme, setTheme] = useState<Record<string, string>>({});
     const [hideHeader, setHideHeader] = useState<boolean>(localStorage.getItem('_tg_header_visible') === 'true' || false)
     const [reloadSupported, setReloadSupported] = useState<boolean>(false)
     const [title, setTitle] = useState<string>('Miniapp')
@@ -121,6 +88,7 @@ export default function Home() {
     const sensorRef = useRef<Accelerometer | null>(null);
     const navigate = useNavigate();
     const location = useLocation()
+    const { theme: appTheme, setTheme: setAppTheme } = useTheme()
     
     const setHeaderVisibility = (st: boolean) => {
         setHideHeader(st)
@@ -176,20 +144,29 @@ export default function Home() {
                 </div>
         }
         
-        const context = { setBackBtn, setMainBtn, popup, postEvent, setTheme, setClosed, setWebData, invoiceDiv, setSecBtn, setStgBtn, setAm, setReloadSupported, setTitle }
+        const context = { setBackBtn, setMainBtn, popup, postEvent, setTheme, setClosed, setWebData, invoiceDiv, setSecBtn, setStgBtn, setAm, setReloadSupported, theme, appTheme, setTitle }
         window.addEventListener('message', (ev) => eventHandler(ev, context))
-        
     }, [])
     
     useEffect(() => {
-    const storedUrl = storage.get('url');
-    if (!url && !storedUrl) return setOpen(true);
+        const handler = () => postEvent("theme_changed", { theme_params: getTheme(appTheme) })
 
-    const u = url || storedUrl;
+        window.addEventListener("theme-changed", handler)
+
+        return () => {
+            window.removeEventListener("theme-changed", handler)
+        }
+    }, [appTheme])
+    
+    useEffect(() => {
+        const storedUrl = storage.get('url');
+        if (!url && !storedUrl) return setOpen(true)
+
+        const u = url || storedUrl
         
-    const data = makeInitData(u + location.pathname + location.search);
-
-    setWebUrl(prev => (prev !== data ? data : prev));
+        const { data, themeParams } = makeInitData(u + location.pathname + location.search)
+        setTheme(themeParams)
+        setWebUrl(prev => (prev !== data ? data : prev))
     }, [url])
     
     const btns = () => {
@@ -211,9 +188,14 @@ export default function Home() {
         }
         postEvent('back_button_pressed')
     }
+    
+    const changeTheme = () => {
+        const tm = appTheme === 'light' ? 'dark' : appTheme === 'dark' ? 'system' : 'light'
+        setAppTheme(tm)
+    }
      
-    return(<div className="w-screen h-[100dvh] text-white flex flex-col" style={{
-        background: theme.bg_color || themeParams.bg_color
+    return(<div className="w-screen h-[100dvh] flex flex-col" style={{
+        background: theme.bg_color || 'var(--background)'
     }} ref={container}>
         
         <UrlPopup open={open} setOpen={setOpen} onSubmit={(vl: string) => {
@@ -223,24 +205,27 @@ export default function Home() {
             setOpen(false);
         }}/>
         
-        {hideHeader && <FloatingMenu reload={reload} onShow={() => setHeaderVisibility(false)} onSettings={() => postEvent('settings_button_pressed')} backText={backBtn.is_visible ? 'Back' : 'Close' } onBack={handleBack}/>}
+        {hideHeader && <FloatingMenu reload={reload} onShow={() => setHeaderVisibility(false)} onSettings={() => postEvent('settings_button_pressed')} backText={backBtn.is_visible ? 'Back' : 'Close' } onBack={handleBack} changeTheme={changeTheme} appTheme={appTheme} hasSettings={stgBtn.is_visible} />}
         
-        {!closed && !hideHeader && <header className="w-full p-2 flex justify-between border-b-1 border-[#333]" style={{
-            background: theme.header_color || themeParams.bg_color
+        {!closed && !hideHeader && <header className="w-full p-2 flex border-b-1 border-border bg-background" style={{
+            background: theme.header_bg_color || 'var(--background)'
         }}>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center flex-1">
             <button onClick={handleBack} className="ripple px-1.5 rounded-full">{backBtn.is_visible ? <ArrowLeft /> : <X />}</button>
             <div className='w-full flex'>
             <span className="font-bold">{title || 'Miniapp'}</span>
             </div>
             </div>
+            <button className="rounded-full hover:bg-transparent mx-2" onClick={changeTheme}>            
+                {appTheme === 'light' ? <Sun className='w-5 h-5' /> : appTheme === 'dark' ? <Moon className='w-5 h-5' /> : <Laptop className='w-5 h-5' />}
+            </button>
             {<DropdownMenu modal={false}>
         <DropdownMenuTrigger className='bg-transparent active:bg-transparent' asChild>
-          <Button aria-label="Open menu" size="icon-sm" className="rounded-full hover:bg-transparent">            
-            <EllipsisVertical />
+          <Button aria-label="Open menu" size="icon" className="rounded-full hover:bg-transparent text-foreground">            
+            <EllipsisVertical className='w-5 h-5' />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-40 bg-[#222] border-[#444] text-white" align="end">
+        <DropdownMenuContent className="w-40" align="end">
           <DropdownMenuGroup>
             <DropdownMenuItem onSelect={() => reload()} className="ripple focus:transparent">
               <span>Reload</span>
@@ -285,27 +270,26 @@ export default function Home() {
         />}
         {!webUrl && !failed && <div className="flex w-full h-[90%] justify-center items-center flex-col gap-2 overflow-hidden">
             <h3 className="text-2xl">Loading</h3>
-            <p className="text-[#999]"></p>
         </div>}
         
-        {closed && <div className="flex w-screen h-screen fixed top-0 left-0 z-4 justify-center items-center flex-col gap-2 overflow-hidden bg-[#333]">
+        {closed && <div className="flex w-screen h-screen fixed top-0 left-0 z-4 justify-center items-center flex-col gap-2 overflow-hidden bg-background">
             <h3 className="text-2xl">Closed</h3>
-            <p className="text-[#999]">Miniapp closed</p>
-            <button className="py-2 px-10 bg-blue-500 rounded-xl ripple" onClick={() => { reload(); setClosed(false) }}>Open</button>
+            <p className="text-muted">Miniapp closed</p>
+            <button className="py-2 px-10 bg-primary text-primary-foreground rounded-xl ripple" onClick={() => { reload(); setClosed(false) }}>Open</button>
         </div>}
         
-        {!webUrl && <div className="flex w-screen h-screen fixed top-0 left-0 z-4 justify-center items-center flex-col gap-2 overflow-hidden bg-[#333]">
+        {!webUrl && <div className="flex w-screen h-screen fixed top-0 left-0 z-4 justify-center items-center flex-col gap-2 overflow-hidden bg-background">
             <h3 className="text-2xl">No Website Added Yet</h3>
-            <p className="text-[#999]">Add a website URL to get started</p>
-            <button className="py-2 px-10 bg-blue-500 rounded-xl ripple" onClick={() => setOpen(true)}>Add URL</button>
+            <p className="text-muted">Add a website URL to get started</p>
+            <button className="py-2 px-10 bg-primary text-primary-foreground rounded-xl ripple" onClick={() => setOpen(true)}>Add URL</button>
         </div>}
         
-        {(mainBtn.is_visible || secBtn.is_visible) && <div className={`w-full bg-black py-2 px-3 flex justify-center gap-2 ${['top', 'bottom'].includes(secBtn.position || '') ? 'flex-col' : ''}`}>
+        {(mainBtn.is_visible || secBtn.is_visible) && <div className={`w-full bg-background py-2 px-3 flex justify-center gap-2 ${['top', 'bottom'].includes(secBtn.position || '') ? 'flex-col' : ''}`}>
             
             {!closed && btns().map((btn, ind) => {
                 if (!btn?.is_visible) return;
                 
-                return(<button className={`w-full py-2.5 bg-blue-500 rounded-lg active:scale-96 data-[inactive=true]:active:scale-100 transition-transform duration-200 flex items-center justify-center ripple ${btn.has_shine_effect ? 'shine-effect' : ''}`} data-inactive={!btn.is_active} data-rp-color={btn.text_color + '50'} style={{background: btn.color || '#007bff', color: btn.text_color || 'white'}} onClick={() => {
+                return(<button className={`w-full py-2.5 bg-primary text-primary-foreground rounded-lg active:scale-96 data-[inactive=true]:active:scale-100 transition-transform duration-200 flex items-center justify-center ripple ${btn.has_shine_effect ? 'shine-effect' : ''}`} data-inactive={!btn.is_active} data-rp-color={btn.text_color + '50'} style={{background: btn.color || 'var(--primary)', color: btn.text_color || 'var(--primary-foreground)'}} onClick={() => {
                 if (!btn.is_active) return;
                 postEvent(btn.event || "")
             }} key={ind}>

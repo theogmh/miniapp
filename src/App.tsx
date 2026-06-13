@@ -5,11 +5,13 @@ import {useRipple} from '@/hooks/useRipple'
 import {Webs} from '@/pages/Webs'
 import {Settings} from '@/pages/Settings'
 import {Doc} from '@/pages/Doc'
+import { ThemeProvider } from "@/hooks/useTheme"
 
 function App() {
   useRipple()
   return (
     <div>
+       <ThemeProvider>
        <PopupProvider>
        <BrowserRouter>
            <Routes>
@@ -21,6 +23,7 @@ function App() {
            </Routes>
        </BrowserRouter>
        </PopupProvider>
+       </ThemeProvider>
     </div>
   )
 }

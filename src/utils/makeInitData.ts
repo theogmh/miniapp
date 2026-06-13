@@ -62,27 +62,32 @@ export default function makeInitData(webUrl: string) {
   const encodedParts = sortedKeys.map((k) => `${k}=${encodeURIComponent(fields[k])}`);
   encodedParts.push(`hash=${hash}`);
   const init_data = encodedParts.join("&");
-
+  
+  const white = !(document as any).documentElement.classList.contains("dark")
+  console.log(white && 'itsWhite')
+  const bg = white ? '#ffffff' : '#000000'
+  const tc = white ? '#000000' : '#ffffff'
+  
   const themeParams = {
-    bg_color: "#212121",
-    button_color: "#007bff",
+    bg_color: bg,
+    button_color: "#3B82F6",
     button_text_color: "#ffffff",
-    hint_color: "#aaaaaa",
-    link_color: "#007bff",
-    secondary_bg_color: "#181818",
-    text_color: "#ffffff",
-    header_bg_color: "#212121",
-    accent_text_color: "#007bff",
+    hint_color: "#ffffff",
+    link_color: "#3B82F6",
+    secondary_bg_color: bg,
+    text_color: tc,
+    header_bg_color: bg,
+    accent_text_color: '#ffffff',
     section_bg_color: "#212121",
-    section_header_text_color: "#007bff",
+    section_header_text_color: "#3B82F6",
     subtitle_text_color: "#aaaaaa",
     destructive_text_color: "#ff595a",    
-    bottom_bar_bg_color: '#000000'
+    bottom_bar_bg_color: bg
   };
 
-  const url: string = `${webUrl}${webUrl.endsWith('/') ? '' : '/'}#tgWebAppData=${encodeURIComponent(init_data)}&tgWebAppVersion=9.1&tgWebAppPlatform=web&tgWebAppThemeParams=${encodeURIComponent(
+  const url: string = `${webUrl}${webUrl.endsWith('/') ? '' : '/'}#tgWebAppData=${encodeURIComponent(init_data)}&tgWebAppVersion=9.1&tgWebAppPlatform=android&tgWebAppThemeParams=${encodeURIComponent(
     JSON.stringify(themeParams)
   )}`;
 
-  return url;
+  return { data: url, themeParams };
 }
