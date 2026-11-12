@@ -1,6 +1,6 @@
 # Telegram MiniApp Tester 
 
-A **modern, super-fast Telegram MiniApp testing tool** that lets you experiment with MiniApps directly—no HTTPS hosting or tunneling required. Perfect for developers who want to quickly test MiniApp functionality and UI.
+A **modern, super-fast Telegram MiniApp testing tool** that lets you experiment with MiniApps directly. no HTTPS hosting or tunneling required. Perfect for developers who want to quickly test MiniApp functionality and UI.
 
 ---
 
